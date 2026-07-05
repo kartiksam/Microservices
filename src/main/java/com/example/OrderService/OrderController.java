@@ -88,9 +88,10 @@ public class OrderController {
 //}
 
 //    rate limiter
+//    for bulhead also same
 
     @GetMapping("/{id}")
-    public void callProductApi(@PathVariable String id){
+    public void callProductApi(@PathVariable String id) throws InterruptedException {
         orderService.invokeProductApi(id);
     }
 }
