@@ -2,6 +2,7 @@ package com.example.OrderService;
 
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +19,14 @@ public class OrderService {
  the method on which this @RateLimiter annotation applies,
  need to be public and Spring managed bean.
  */
-@Bulkhead(name="bulkRateLimiter",type = Bulkhead.Type.SEMAPHORE,
-        fallbackMethod = "bulkheadLimitedFallback")
+//@Bulkhead(name="bulkRateLimiter",type = Bulkhead.Type.SEMAPHORE,
+//        fallbackMethod = "bulkheadLimitedFallback")
+@Retry(name = "productRetry", fallbackMethod = "retryFallback")
     public void invokeProductApi(String id) throws InterruptedException {
-    System.out.println("Thread : " + Thread.currentThread().getName());
+//    System.out.println("Thread : " + Thread.currentThread().getName());
 
     // Simulate a long-running request
-    Thread.sleep(10000);
+//    Thread.sleep(10000);
 
     String response=productClient.getProductById(id);
         System.out.println("Response from Product api call is"+response);
@@ -45,5 +47,11 @@ public void rateLimitedFallback(String id, Throwable t) {
     public void bulkheadLimitedFallback(String id, Throwable t) {
         System.out.println("Too many requests. Try later");
         // throw exception here and handle it gracefully
+    }
+    public void retryFallback(String id, Throwable t) {
+
+        System.out.println("Retry exhausted, product service unavailable");
+
+
     }
 }
